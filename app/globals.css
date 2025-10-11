@@ -137,3 +137,29 @@ html.access-large-font {
   background-size: cover;
   background-position: center;
 }
+
+/* Add these styles to the bottom of your globals.css file */
+
+/* Hides the default Google Translate dropdown */
+.goog-te-gadget-simple {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+.goog-te-gadget-simple .goog-te-menu-value span {
+  display: none;
+}
+
+.goog-te-gadget-icon {
+  display: none !important;
+}
+
+/* Hides the "Powered by Google Translate" banner that appears at the top */
+body > .skiptranslate {
+  display: none !important;
+}
+
+/* General override for the top bar */
+body {
+  top: 0px !important; 
+}

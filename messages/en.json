@@ -1,0 +1,24 @@
+{
+  "Navbar": {
+    "home": "Home",
+    "features": "Features",
+    "consult": "Consult a Doctor",
+    "contact": "Contact",
+    "about": "About Us"
+  },
+  "ConsultPage": {
+    "title": "Find Your Doctor",
+    "subtitle": "Connect instantly via call or video, or book an appointment with top-rated specialists.",
+    "searchPlaceholder": "Search doctors, specialties...",
+    "filterPlaceholder": "Filter by specialty",
+    "onlineStatus": "Call & Video available now",
+    "offlineStatus": "Instant call is offline",
+    "bookButton": "Book"
+  },
+  "Hero": {
+    "tagline": "Personal Health Companion for Mother and Child Care",
+    "subtitle": "Trusted AI guidance, telemedicine, and health scheme awareness to support mothers and children on their health journey.",
+    "startConsultation": "Start Consultation",
+    "checkSchemes": "Check Schemes"
+  }
+}
