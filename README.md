@@ -25,8 +25,6 @@ health-companion
 │  │  │  └─ route.ts
 │  │  └─ schemes
 │  │     └─ route.ts
-│  ├─ assets
-│  │  └─ maternal-bg.jpg
 │  ├─ chatbot
 │  │  └─ page.tsx
 │  ├─ child-care
@@ -56,15 +54,22 @@ health-companion
 │  │  └─ page.tsx
 │  ├─ schemes
 │  │  └─ page.tsx
+│  ├─ tools
+│  │  └─ page.tsx
 │  └─ wellness-hub
 │     └─ page.tsx
 ├─ components
 │  ├─ accessibility-controls.tsx
 │  ├─ appointment-form.tsx
+│  ├─ calculators
+│  │  ├─ bmi-calculator.tsx
+│  │  ├─ due-date-calculator.tsx
+│  │  └─ period-ovulation-calculator.tsx
 │  ├─ chatbot.tsx
 │  ├─ conditional-layout.tsx
 │  ├─ consultation-form.tsx
 │  ├─ contact-form.tsx
+│  ├─ custom-language-switcher.tsx
 │  ├─ emergency-locator.tsx
 │  ├─ feature-cards.tsx
 │  ├─ footer.tsx
@@ -72,9 +77,11 @@ health-companion
 │  │  ├─ child-details-form.tsx
 │  │  ├─ maternal-details-form.tsx
 │  │  └─ pregnancy-checker-form.tsx
+│  ├─ google-translate.tsx
 │  ├─ health-tracker.tsx
 │  ├─ hero.tsx
 │  ├─ hospital-locator.tsx
+│  ├─ language-prompt.tsx
 │  ├─ language-toggle.tsx
 │  ├─ map-view.tsx
 │  ├─ maternal-child-cta.tsx
@@ -125,6 +132,7 @@ health-companion
 │  │  ├─ item.tsx
 │  │  ├─ kbd.tsx
 │  │  ├─ label.tsx
+│  │  ├─ list-item.tsx
 │  │  ├─ menubar.tsx
 │  │  ├─ navigation-menu.tsx
 │  │  ├─ pagination.tsx
@@ -165,6 +173,9 @@ health-companion
 │  ├─ mock-data.ts
 │  ├─ translations.ts
 │  └─ utils.ts
+├─ messages
+│  ├─ en.json
+│  └─ hi.json
 ├─ next.config.mjs
 ├─ package-lock.json
 ├─ package.json

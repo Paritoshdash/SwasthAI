@@ -8,7 +8,7 @@ const useI18n = () => ({
   t: (key: string) => {
     const translations: { [key: string]: string } = {
       tagline: "Personal Health Companion for Mother and Child Care",
-      startConsultation: "Start Consultation",
+      startConsultation: "➡️Check Pregnancy First",
       checkSchemes: "Check Schemes",
     };
     return translations[key] || key;
@@ -82,7 +82,7 @@ export function Hero() {
                            transition-all duration-700 delay-400 transform ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-            <a href="/consult" className="w-full xs:w-auto group">
+            <a href="/maternal-care" className="w-full xs:w-auto group">
               <Button 
                 size="lg" 
                 className="w-full xs:w-auto bg-primary text-primary-foreground 

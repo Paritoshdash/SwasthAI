@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { CustomLanguageSwitcher } from "@/components/custom-language-switcher"; // ✨ Import the new component
+import { CustomLanguageSwitcher } from "@/components/custom-language-switcher";
 
 export function Navbar() {
   return (
@@ -22,6 +22,19 @@ export function Navbar() {
           <Link href="/chatbot">
             <Button variant="ghost">AI Chat</Button>
           </Link>
+          <Link href="/reminders">
+            <Button variant="ghost">Reminders</Button>
+          </Link>
+          {/* ✨ ADDED LINK TO NEW TOOLS PAGE */}
+          <Link href="/tools">
+            <Button variant="ghost">Tools</Button>
+          </Link>
+          <Link href="/wellness-hub">
+            <Button variant='ghost'>Baby Care</Button>
+          </Link>
+          <Link href="/pregnancy-care">
+            <Button variant="ghost">Pregnancy Care</Button>
+          </Link>
           <Link href="/about">
             <Button variant="ghost">About</Button>
           </Link>
@@ -31,18 +44,8 @@ export function Navbar() {
           <Link href="/emergency">
             <Button variant="ghost">Emergency🆘</Button>
           </Link>
-          <Link href="/wellness-hub">
-            <Button variant='ghost'>Wellness Hub</Button>
-          </Link>
-          <Link href="/pregnancy-care">
-            <Button variant="ghost">Pregnancy Care</Button>
-          </Link>
-          <Link href="/reminders">
-            <Button variant="ghost">Reminders</Button>
-          </Link>
         </div>
         <div className="flex items-center gap-2">
-          {/* ✨ Replaced the old toggle with the new custom switcher */}
           <CustomLanguageSwitcher />
           <ThemeToggle />
           <Link href="/consult">
