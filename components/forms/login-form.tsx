@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/components/providers/user-provider';
 
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useUser();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,20 +26,15 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+      const result = await login(formData.email, formData.password);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Something went wrong');
       }
       
-      router.push('/'); // Redirect to the main page or dashboard
-      router.refresh(); // Refresh to update server-side state (like navbar)
+      // Redirect to the main page after successful login
+      router.push('/');
+      router.refresh();
 
     } catch (error: any) {
       toast({

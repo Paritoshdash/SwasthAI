@@ -1,3 +1,5 @@
+"use client";
+
 // Keep your existing imports
 import { Hero } from '@/components/hero';
 // import FeatureCards from '@/components/feature-cards';

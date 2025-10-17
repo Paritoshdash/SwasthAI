@@ -11,6 +11,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/providers/language-provider"
 import { AccessibilityProvider } from "@/components/providers/accessibility-provider"
+import { UserProvider } from "@/components/providers/user-provider"
 import { ConditionalLayout } from "@/components/conditional-layout"
 import { Toaster } from "@/components/ui/sonner"
 import { SchemeNotifier } from "@/components/scheme-notifier"
@@ -42,9 +43,11 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>
             <AccessibilityProvider>
-              <Suspense fallback={null}>
-                <ConditionalLayout>{children}</ConditionalLayout>
-              </Suspense>
+              <UserProvider>
+                <Suspense fallback={null}>
+                  <ConditionalLayout>{children}</ConditionalLayout>
+                </Suspense>
+              </UserProvider>
             </AccessibilityProvider>
           </LanguageProvider>
         </ThemeProvider>

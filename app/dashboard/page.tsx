@@ -2,16 +2,50 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useState } from "react"
+import { useUser } from "@/components/providers/user-provider"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function DashboardPage() {
+  const { user, loading } = useUser();
   const [chat, setChat] = useState<{ role: string; content: string }[]>([])
+  
   useEffect(() => {
     const saved = localStorage.getItem("he-chat")
     if (saved) setChat(JSON.parse(saved))
   }, [])
+  
+  if (loading) {
+    return (
+      <section className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-semibold">Loading Dashboard...</h1>
+        <div className="animate-pulse space-y-4 mt-6">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+  
+  if (!user) {
+    return (
+      <section className="container mx-auto px-4 py-12 text-center">
+        <h1 className="text-3xl font-semibold">Access Denied</h1>
+        <p className="mt-4">Please log in to view your dashboard.</p>
+        <Link href="/login">
+          <Button className="mt-6">Go to Login</Button>
+        </Link>
+      </section>
+    );
+  }
+  
   return (
     <section className="container mx-auto px-4 py-12 grid gap-6">
-      <h1 className="text-3xl font-semibold">Dashboard (Demo)</h1>
+      <h1 className="text-3xl font-semibold">Welcome, {user.name}!</h1>
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>

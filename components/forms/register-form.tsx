@@ -9,10 +9,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/components/providers/user-provider';
 
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const { register } = useUser();
   const [formData, setFormData] = useState({ name: '', email: '', password: '', gender: 'female' });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,16 +31,10 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+      const result = await register(formData.name, formData.email, formData.password, formData.gender);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Something went wrong');
       }
 
       toast({
