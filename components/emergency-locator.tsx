@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, MouseEvent } from 'react';
 import MapView from './map-view';
+import { Navigation, Phone } from 'lucide-react';
 
 interface Hospital {
   id: number;
@@ -22,6 +23,22 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+};
+
+// Helper function to open navigation
+const openNavigation = (lat: number, lon: number) => {
+  // Try to open in Google Maps first, fallback to Apple Maps
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+  const appleMapsUrl = `https://maps.apple.com/?daddr=${lat},${lon}`;
+  
+  // Check if we're on iOS (which prefers Apple Maps)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  
+  if (isIOS) {
+    window.open(appleMapsUrl, '_blank');
+  } else {
+    window.open(googleMapsUrl, '_blank');
+  }
 };
 
 export default function EmergencyLocator() {
@@ -131,18 +148,31 @@ export default function EmergencyLocator() {
                       key={hospital.id}
                       className="p-4 border rounded-lg shadow-md bg-card/80 backdrop-blur-sm"
                     >
-                      <h3 className="text-lg font-semibold">{hospital.name}</h3>
-                      <p className="text-sm text-muted-foreground">{distance} km away</p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold">{hospital.name}</h3>
+                          <p className="text-sm text-muted-foreground">{distance} km away</p>
+                        </div>
+                        <button
+                          onClick={() => openNavigation(hospital.lat, hospital.lon)}
+                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          Navigate
+                        </button>
+                      </div>
 
-                      <div className="mt-4 pt-3 border-t">
+                      <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
                         {hospital.phone ? (
-                          <div>
-                            <p className="text-sm font-medium mb-3">
-                              📞 Contact: {hospital.phone}
-                            </p>
-                          </div>
+                          <a
+                            href={`tel:${hospital.phone}`}
+                            className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
+                          >
+                            <Phone className="h-4 w-4" />
+                            Call
+                          </a>
                         ) : (
-                          <div className="text-center">
+                          <div className="text-center w-full">
                             <p className="text-sm text-gray-600 mb-2">
                               No direct number available. For any emergency, please use the
                               national helpline.
