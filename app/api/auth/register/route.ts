@@ -53,3 +53,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   }
 }
+
+// Add a GET handler to prevent build errors
+export async function GET() {
+  return NextResponse.json({ message: 'Register API endpoint' });
+}

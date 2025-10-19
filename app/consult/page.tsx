@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -18,15 +18,14 @@ import {
     Star, MapPin, AlertTriangle, CheckCircle2, Phone, Clock, Navigation, Search, Filter, Zap,
     Calendar as CalendarIcon, User, Mail, Video, PhoneOff, Mic, MicOff, VideoOff
 } from 'lucide-react';
-import type { Doctor } from '../../lib/mock-data';
-import { VideoCallProvider, useVideoCall } from '../../components/video-call-provider';
-import type { IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
+import dynamic from 'next/dynamic';
+import type { EnrichedDoctor } from '../../lib/types';
 
-// --- INTERFACES & TYPES ---
-interface EnrichedDoctor extends Doctor {
-  isOnline?: boolean;
-  phone?: string;
-}
+// Dynamically import components that use Agora SDK
+const VideoCallModal = dynamic(() => import('../../components/video-call-modal'), { 
+  ssr: false,
+  loading: () => <div>Loading video call...</div>
+});
 
 type ConsultationType = 'In-Person' | 'Video Call' | 'Phone Call';
 
@@ -38,7 +37,6 @@ interface AppointmentDetails {
   time: string;
   consultationType: ConsultationType;
 }
-
 
 // --- MAIN PAGE COMPONENT ---
 export default function ConsultPage() {
@@ -58,6 +56,9 @@ export default function ConsultPage() {
 
   useEffect(() => {
     const getLocation = () => {
+      // Only run on client side
+      if (typeof window === 'undefined') return;
+      
       if (!navigator.geolocation) {
         setError("Geolocation is not supported by your browser.");
         setIsLoading(false);
@@ -91,7 +92,8 @@ export default function ConsultPage() {
       const enrichedData = data.map((doc, index) => ({
         ...doc,
         isOnline: Math.random() > 0.5,
-        phone: `+917684940568${index % 10}`
+        phone: `+917684940568${index % 10}`,
+        hospital: doc.location // Use location as hospital for now
       }));
 
       setAllDoctors(enrichedData);
@@ -117,7 +119,8 @@ export default function ConsultPage() {
       filtered = filtered.filter(doc => 
         doc.name.toLowerCase().includes(query) ||
         doc.specialty.toLowerCase().includes(query) ||
-        doc.hospital?.toLowerCase().includes(query)
+        doc.hospital?.toLowerCase().includes(query) ||
+        doc.location.toLowerCase().includes(query)
       );
     }
     
@@ -135,7 +138,9 @@ export default function ConsultPage() {
   };
   
   const handleStartPhoneCall = (phone: string) => {
-    window.location.href = `tel:${phone}`;
+    if (typeof window !== 'undefined') {
+      window.location.href = `tel:${phone}`;
+    }
   };
 
   const handleCloseBookingModal = () => {
@@ -277,11 +282,13 @@ export default function ConsultPage() {
             onClose={handleCloseBookingModal}
             onBookingSuccess={handleBookingSuccess}
           />
-          <VideoCallModal 
-            doctor={selectedDoctor}
-            isOpen={isVideoCallModalOpen}
-            onClose={() => setIsVideoCallModalOpen(false)}
-          />
+          {typeof window !== 'undefined' && (
+            <VideoCallModal 
+              doctor={selectedDoctor}
+              isOpen={isVideoCallModalOpen}
+              onClose={() => setIsVideoCallModalOpen(false)}
+            />
+          )}
         </>
       )}
 
@@ -342,10 +349,10 @@ function DoctorCard({ doctor, onBookClick, onVideoCallClick, onPhoneCallClick }:
             <span className="text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors">({doctor.reviews} reviews)</span>
         </div>
         
-        {doctor.hospital && (
+        {(doctor.hospital || doctor.location) && (
           <div className="flex items-center justify-center text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors">
             <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-            <span className="truncate">{doctor.hospital}</span>
+            <span className="truncate">{doctor.hospital || doctor.location}</span>
           </div>
         )}
         
@@ -687,133 +694,6 @@ function ConfirmationDialog({ isOpen, onClose, details }: { isOpen: boolean, onC
       </AlertDialogContent>
     </AlertDialog>
   );
-}
-
-// --- VIDEO PLAYER COMPONENT ---
-const VideoPlayer = ({
-  videoTrack,
-  audioTrack,
-  isLocal = false,
-}: {
-  videoTrack: ICameraVideoTrack | null;
-  audioTrack: IMicrophoneAudioTrack | null;
-  isLocal?: boolean;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const playerRef = ref.current;
-    if (playerRef && videoTrack) {
-      videoTrack.play(playerRef, { mirror: isLocal });
-    }
-    if (audioTrack) {
-      audioTrack.play();
-    }
-    return () => {
-      videoTrack?.stop();
-      audioTrack?.stop();
-    };
-  }, [videoTrack, audioTrack, isLocal]);
-
-  return (
-    <div
-      ref={ref}
-      className="relative w-full h-full bg-black rounded-lg overflow-hidden"
-    />
-  );
-};
-
-// --- FUNCTIONAL VIDEO CALL MODAL ---
-function FunctionalVideoCallModal({ doctor, isOpen, onClose }: { doctor: EnrichedDoctor; isOpen: boolean; onClose: () => void; }) {
-  const { leave, toggleCamera, toggleMic, isMicOn, isCameraOn, remoteUsers, localVideoTrack, joinState } = useVideoCall();
-  const { toast } = useToast();
-
-  const handleLeave = async () => {
-    await leave();
-    onClose();
-    toast({
-        title: "Call Ended",
-        description: "Your video call has ended.",
-    });
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[80vw] w-full max-h-[90vh] p-0 border-0 bg-gray-900 text-white rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-        <DialogHeader className="sr-only">
-          <DialogTitle>Video call with {doctor.name}</DialogTitle>
-          <DialogDescription>
-            This is an active video call. Use the controls at the bottom to manage your call.
-          </DialogDescription>
-        </DialogHeader>
-
-        {!joinState ? (
-             <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 min-h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-                <p className="text-lg text-muted-foreground">Connecting...</p>
-             </div>
-        ) : (
-             <div className="flex-1 relative p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary">
-                    <VideoPlayer videoTrack={localVideoTrack} audioTrack={null} isLocal />
-                    <div className="absolute bottom-2 left-2 bg-black/70 p-1.5 rounded-md text-xs backdrop-blur-sm">You</div>
-                    {!isMicOn && <MicOff className="absolute top-2 right-2 text-white h-5 w-5 bg-red-600/80 p-1 rounded-full"/>}
-                </div>
-
-                {remoteUsers.map((user: IAgoraRTCRemoteUser) => (
-                    <div className="relative aspect-video rounded-xl overflow-hidden border border-muted-foreground/30" key={user.uid}>
-                        <VideoPlayer videoTrack={user.videoTrack || null} audioTrack={user.audioTrack || null} />
-                        <div className="absolute bottom-2 left-2 bg-black/70 p-1.5 rounded-md text-xs backdrop-blur-sm">{doctor.name}</div>
-                        {!user.hasAudio && <MicOff className="absolute top-2 right-2 text-white h-5 w-5 bg-red-600/80 p-1 rounded-full"/>}
-                    </div>
-                ))}
-             </div>
-        )}
-
-        <div className="w-full p-4 bg-black/30 flex justify-center items-center gap-4">
-            <Button onClick={toggleMic} variant="secondary" size="icon" className={`h-14 w-14 rounded-full transition-all ${!isMicOn ? 'bg-red-500/80 hover:bg-red-500/90 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
-                {isMicOn ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
-            </Button>
-            <Button onClick={toggleCamera} variant="secondary" size="icon" className={`h-14 w-14 rounded-full transition-all ${!isCameraOn ? 'bg-red-500/80 hover:bg-red-500/90 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
-                {isCameraOn ? <Video className="h-6 w-6" /> : <VideoOff className="h-6 w-6" />}
-            </Button>
-            <Button onClick={handleLeave} variant="destructive" size="icon" className="h-14 w-14 rounded-full bg-red-600 hover:bg-red-700 transition-all shadow-lg">
-                <PhoneOff className="h-6 w-6" />
-            </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// --- MODAL WRAPPER WITH PROVIDER ---
-function VideoCallModal({ doctor, isOpen, onClose }: { doctor: EnrichedDoctor; isOpen: boolean; onClose: () => void; }) {
-    const channelName = `health-companion-call-${doctor.id}`;
-    const AGORA_APP_ID = process.env.NEXT_PUBLIC_AGORA_APP_ID || "";
-
-    if (!isOpen) return null;
-    
-    if (!AGORA_APP_ID) {
-        console.error("Agora App ID is not set. Please add NEXT_PUBLIC_AGORA_APP_ID to your .env.local file.");
-        return (
-            <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Configuration Error</DialogTitle>
-                        <DialogDescription>
-                            The Agora App ID is missing. The video call feature cannot be initialized. Please check the developer console for instructions.
-                        </DialogDescription>
-                    </DialogHeader>
-                </DialogContent>
-            </Dialog>
-        );
-    }
-
-    return (
-        <VideoCallProvider appId={AGORA_APP_ID} channelName={channelName}>
-            <FunctionalVideoCallModal doctor={doctor} isOpen={isOpen} onClose={onClose} />
-        </VideoCallProvider>
-    );
 }
 
 // --- SKELETON LOADER ---

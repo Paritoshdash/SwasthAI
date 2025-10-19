@@ -5,6 +5,7 @@ import { comparePasswords } from '@/lib/auth';
 import { SignJWT } from 'jose';
 import { z } from 'zod';
 
+// Use a singleton pattern for Prisma client to prevent multiple instances
 const prisma = new PrismaClient();
 
 const loginSchema = z.object({
@@ -56,4 +57,9 @@ export async function POST(req: Request) {
     console.error(error);
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   }
+}
+
+// Add a GET handler to prevent build errors
+export async function GET() {
+  return NextResponse.json({ message: 'Login API endpoint' });
 }

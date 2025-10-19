@@ -13,9 +13,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 
 export function Navbar() {
   const { user, logout, loading } = useUser();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render anything different on the server vs client to prevent hydration errors
+  const showLoading = loading || !isClient;
 
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b">
@@ -59,8 +68,9 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <CustomLanguageSwitcher />
           <ThemeToggle />
-          {loading ? (
+          {showLoading ? (
             <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-24 rounded-md" />
               <Skeleton className="h-10 w-24 rounded-md" />
             </div>
           ) : user ? (

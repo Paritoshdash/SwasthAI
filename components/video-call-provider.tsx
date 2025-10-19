@@ -34,7 +34,7 @@ export const VideoCallProvider = ({
   appId: string;
   channelName: string;
 }) => {
-  const client = useState(() => AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' }))[0];
+  const [client, setClient] = useState<IAgoraRTCClient | null>(null);
   const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
   const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
   const [joinState, setJoinState] = useState(false);
@@ -43,6 +43,16 @@ export const VideoCallProvider = ({
   const [isCameraOn, setIsCameraOn] = useState(true);
 
   useEffect(() => {
+    // Only initialize Agora client on the client side
+    if (typeof window !== 'undefined') {
+      const agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+      setClient(agoraClient);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!client) return;
+
     const joinChannel = async () => {
       try {
         // Fetch the token from our API route
@@ -104,10 +114,18 @@ export const VideoCallProvider = ({
   }, [client, appId, channelName]);
 
   const leave = async () => {
-    localAudioTrack?.close();
-    localVideoTrack?.close();
+    if (localAudioTrack) {
+      localAudioTrack.close();
+      setLocalAudioTrack(null);
+    }
+    if (localVideoTrack) {
+      localVideoTrack.close();
+      setLocalVideoTrack(null);
+    }
     setJoinState(false);
-    await client.leave();
+    if (client) {
+      await client.leave();
+    }
   };
 
   const toggleCamera = () => {
@@ -124,8 +142,24 @@ export const VideoCallProvider = ({
     }
   };
 
+  // Don't render children until client is initialized to prevent SSR issues
+  if (!client) {
+    return <>{children}</>;
+  }
+
   return (
-    <VideoCallContext.Provider value={{ client, localAudioTrack, localVideoTrack, remoteUsers, joinState, leave, toggleCamera, toggleMic, isMicOn, isCameraOn }}>
+    <VideoCallContext.Provider value={{ 
+      client, 
+      localAudioTrack, 
+      localVideoTrack, 
+      remoteUsers, 
+      joinState, 
+      leave, 
+      toggleCamera, 
+      toggleMic, 
+      isMicOn, 
+      isCameraOn 
+    }}>
       {children}
     </VideoCallContext.Provider>
   );

@@ -76,3 +76,8 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// Add a POST handler to prevent build errors
+export async function POST() {
+  return NextResponse.json({ message: 'Hospitals API endpoint' });
+}

@@ -69,3 +69,8 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// Add a GET handler to prevent build errors
+export async function GET() {
+  return NextResponse.json({ message: 'Contact API endpoint' });
+}

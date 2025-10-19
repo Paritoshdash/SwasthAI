@@ -34,9 +34,16 @@ interface JwtPayload extends JWTPayload {
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const checkAuthStatus = async () => {
       try {
         const token = document.cookie
@@ -67,7 +74,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkAuthStatus();
-  }, []);
+  }, [isClient]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -135,6 +142,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     logout,
     isAuthenticated: !!user
   }), [user, loading]);
+
+  // Don't render anything different on the server vs client to prevent hydration errors
+  if (!isClient) {
+    return <UserContext.Provider value={{...value, loading: true}}>{children}</UserContext.Provider>;
+  }
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

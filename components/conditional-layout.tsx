@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CustomLanguageSwitcher } from "@/components/custom-language-switcher";
+import { useState, useEffect } from "react";
 
 // Special navbar without login/signup buttons
 function EmergencyContactNavbar() {
@@ -69,6 +70,11 @@ export function ConditionalLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Define routes where ONLY the Footer should be hidden
   const noFooterRoutes = ["/chatbot"];
@@ -76,17 +82,19 @@ export function ConditionalLayout({
   // Define routes where we should use the special navbar without login/signup
   const specialNavbarRoutes = ["/emergency", "/contact"];
 
-  const shouldHideFooter = noFooterRoutes.includes(pathname);
-  const shouldUseSpecialNavbar = specialNavbarRoutes.includes(pathname);
+  const shouldHideFooter = isClient && noFooterRoutes.includes(pathname);
+  const shouldUseSpecialNavbar = isClient && specialNavbarRoutes.includes(pathname);
+
+  // On the server, always render the regular navbar to avoid hydration mismatch
+  const navbar = isClient && shouldUseSpecialNavbar ? <EmergencyContactNavbar /> : <Navbar />;
 
   return (
     <>
-      {/* Use special navbar for emergency and contact pages */}
-      {shouldUseSpecialNavbar ? <EmergencyContactNavbar /> : <Navbar />}
+      {navbar}
       <main className="min-h-dvh">{children}</main>
 
       {/* The Footer will now only render if the route is NOT '/chatbot' */}
-      {!shouldHideFooter && <Footer />}
+      {isClient && !shouldHideFooter && <Footer />}
     </>
   );
 }
